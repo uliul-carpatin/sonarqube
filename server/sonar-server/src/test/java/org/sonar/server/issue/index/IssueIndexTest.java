@@ -80,23 +80,23 @@ import static org.sonar.server.issue.IssueDocTesting.newDoc;
 
 public class IssueIndexTest {
 
-  private System2 system2 = mock(System2.class);
   private MapSettings settings = new MapSettings();
+
   @Rule
   public EsTester esTester = new EsTester(
     new IssueIndexDefinition(settings.asConfig()),
     new ViewIndexDefinition(settings.asConfig()),
     new RuleIndexDefinition(settings.asConfig()));
   @Rule
-  public DbTester dbTester = DbTester.create(system2);
-  @Rule
   public UserSessionRule userSessionRule = UserSessionRule.standalone();
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-
+  private System2 system2 = mock(System2.class);
+  @Rule
+  public DbTester db = DbTester.create(system2);
   private IssueIndexer issueIndexer = new IssueIndexer(esTester.client(), new IssueIteratorFactory(null));
   private ViewIndexer viewIndexer = new ViewIndexer(null, esTester.client());
-  private RuleIndexer ruleIndexer = new RuleIndexer(esTester.client(), dbTester.getDbClient());
+  private RuleIndexer ruleIndexer = new RuleIndexer(esTester.client(), db.getDbClient());
   private PermissionIndexerTester authorizationIndexerTester = new PermissionIndexerTester(esTester, issueIndexer);
 
   private IssueIndex underTest = new IssueIndex(esTester.client(), system2, userSessionRule, new AuthorizationTypeSupport(userSessionRule));
@@ -1329,11 +1329,11 @@ public class IssueIndexTest {
 
   @Test
   public void list_tags() {
-    RuleDefinitionDto r1 = dbTester.rules().insert();
-    RuleDefinitionDto r2 = dbTester.rules().insert();
-    ruleIndexer.commitAndIndex(dbTester.getSession(), asList(r1.getKey(), r2.getKey()));
+    RuleDefinitionDto r1 = db.rules().insert();
+    RuleDefinitionDto r2 = db.rules().insert();
+    ruleIndexer.commitAndIndex(db.getSession(), asList(r1.getKey(), r2.getKey()));
 
-    OrganizationDto org = dbTester.organizations().insert();
+    OrganizationDto org = db.organizations().insert();
     ComponentDto project = ComponentTesting.newPrivateProjectDto(newOrganizationDto());
     ComponentDto file = newFileDto(project, null);
     indexIssues(
@@ -1342,12 +1342,22 @@ public class IssueIndexTest {
       newDoc("ISSUE3", file).setOrganizationUuid(org.getUuid()).setRuleKey(r2.getKey().toString()),
       newDoc("ISSUE4", file).setOrganizationUuid(org.getUuid()).setRuleKey(r1.getKey().toString()).setTags(of("convention")));
 
-    assertThat(underTest.listTags(org, null, Integer.MAX_VALUE)).containsOnly("convention", "java8", "bug");
+    assertThat(underTest.listTags(org, null, 100)).containsOnly("convention", "java8", "bug");
     assertThat(underTest.listTags(org, null, 2)).containsOnly("bug", "convention");
-    assertThat(underTest.listTags(org, "vent", Integer.MAX_VALUE)).containsOnly("convention");
+    assertThat(underTest.listTags(org, "vent", 100)).containsOnly("convention");
     assertThat(underTest.listTags(org, null, 1)).containsOnly("bug");
-    assertThat(underTest.listTags(org, null, Integer.MAX_VALUE)).containsOnly("convention", "java8", "bug");
-    assertThat(underTest.listTags(org, "invalidRegexp[", Integer.MAX_VALUE)).isEmpty();
+    assertThat(underTest.listTags(org, null, 100)).containsOnly("convention", "java8", "bug");
+    assertThat(underTest.listTags(org, "invalidRegexp[", 100)).isEmpty();
+  }
+
+  @Test
+  public void fail_to_list_tags_when_size_greater_than_500() {
+    OrganizationDto organization = db.organizations().insert();
+
+    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expectMessage("Page size must be lower than or equals to 500");
+
+    underTest.listTags(organization, null, 501);
   }
 
   @Test
