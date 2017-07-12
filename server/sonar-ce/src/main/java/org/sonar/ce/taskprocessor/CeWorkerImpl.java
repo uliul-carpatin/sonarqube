@@ -21,6 +21,7 @@ package org.sonar.ce.taskprocessor;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
+import org.sonar.api.utils.MessageException;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 import org.sonar.ce.log.CeLogging;
@@ -95,6 +96,8 @@ public class CeWorkerImpl implements CeWorker {
         LOG.error("No CeTaskProcessor is defined for task of type {}. Plugin configuration may have changed", task.getType());
         status = CeActivityDto.Status.FAILED;
       }
+    } catch (MessageException e) {
+      error = e;
     } catch (Throwable e) {
       LOG.error(format("Failed to execute task %s", task.getUuid()), e);
       error = e;
