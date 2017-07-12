@@ -64,7 +64,6 @@ public class CeWorkerImpl implements CeWorker {
     return true;
   }
 
-
   private Optional<CeTask> tryAndFindTaskToExecute() {
     try {
       return queue.peek(uuid);
@@ -111,7 +110,12 @@ public class CeWorkerImpl implements CeWorker {
     try {
       queue.remove(task, status, taskResult, error);
     } catch (Exception e) {
-      LOG.error(format("Failed to finalize task with uuid '%s' and persist its state to db", task.getUuid()), e);
+      String errorMessage = format("Failed to finalize task with uuid '%s' and persist its state to db", task.getUuid());
+      if (error instanceof MessageException) {
+        LOG.error(format("%s. Task failed with MessageException \"%s\"", errorMessage, error.getMessage()), e);
+      } else {
+        LOG.error(errorMessage, e);
+      }
     } finally {
       stopActivityProfiler(ceProfiler, task, status);
       ceLogging.clearForTask();
