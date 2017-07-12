@@ -76,7 +76,7 @@ public class IssuesActionTest {
 
   private static RuleDefinitionDto RULE_DEFINITION = newRule(RuleKey.of("squid", "AvoidCycle"));
 
-  private IssueIndexer issueIndexer = new IssueIndexer(es.client(), new IssueIteratorFactory(db.getDbClient()));
+  private IssueIndexer issueIndexer = new IssueIndexer(es.client(), db.getDbClient(), new IssueIteratorFactory(db.getDbClient()));
   private PermissionIndexerTester authorizationIndexerTester = new PermissionIndexerTester(es, issueIndexer);
   private WsActionTester tester = new WsActionTester(new IssuesAction(db.getDbClient(),
     new IssueIndex(es.client(), system2, userSessionRule, new AuthorizationTypeSupport(userSessionRule)),

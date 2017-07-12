@@ -94,7 +94,7 @@ public class IssueIndexTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  private IssueIndexer issueIndexer = new IssueIndexer(esTester.client(), new IssueIteratorFactory(null));
+  private IssueIndexer issueIndexer = new IssueIndexer(esTester.client(), dbTester.getDbClient(), new IssueIteratorFactory(null));
   private ViewIndexer viewIndexer = new ViewIndexer(null, esTester.client());
   private RuleIndexer ruleIndexer = new RuleIndexer(esTester.client(), dbTester.getDbClient());
   private PermissionIndexerTester authorizationIndexerTester = new PermissionIndexerTester(esTester, issueIndexer);
