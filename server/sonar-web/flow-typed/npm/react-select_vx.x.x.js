@@ -1,4 +1,4 @@
-// flow-typed signature: 9fd76865b33bdbb8e2eaa1582c3eba93
+// flow-typed signature: 1c5bf8ebeaac656100a0a5c19736dec7
 // flow-typed version: <<STUB>>/react-select_v^1.0.0-rc.2/flow_v0.47.0
 
 /**
@@ -27,70 +27,6 @@ declare module 'react-select/dist/react-select' {
 }
 
 declare module 'react-select/dist/react-select.min' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/app' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/BooleanSelect' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/Contributors' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/Creatable' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/CustomComponents' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/CustomRender' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/GithubUsers' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/Multiselect' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/NumericSelect' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/States' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/components/Virtualized' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/data/cities' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/data/contributors' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/data/states' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/examples/src/data/users' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/gulpfile' {
   declare module.exports: any;
 }
 
@@ -174,26 +110,6 @@ declare module 'react-select/src/Value' {
   declare module.exports: any;
 }
 
-declare module 'react-select/test/Async-test' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/test/AsyncCreatable-test' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/test/Creatable-test' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/test/Select-test' {
-  declare module.exports: any;
-}
-
-declare module 'react-select/test/Value-test' {
-  declare module.exports: any;
-}
-
 declare module 'react-select/testHelpers/jsdomHelper' {
   declare module.exports: any;
 }
@@ -212,54 +128,6 @@ declare module 'react-select/dist/react-select.js' {
 }
 declare module 'react-select/dist/react-select.min.js' {
   declare module.exports: $Exports<'react-select/dist/react-select.min'>;
-}
-declare module 'react-select/examples/src/app.js' {
-  declare module.exports: $Exports<'react-select/examples/src/app'>;
-}
-declare module 'react-select/examples/src/components/BooleanSelect.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/BooleanSelect'>;
-}
-declare module 'react-select/examples/src/components/Contributors.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/Contributors'>;
-}
-declare module 'react-select/examples/src/components/Creatable.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/Creatable'>;
-}
-declare module 'react-select/examples/src/components/CustomComponents.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/CustomComponents'>;
-}
-declare module 'react-select/examples/src/components/CustomRender.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/CustomRender'>;
-}
-declare module 'react-select/examples/src/components/GithubUsers.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/GithubUsers'>;
-}
-declare module 'react-select/examples/src/components/Multiselect.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/Multiselect'>;
-}
-declare module 'react-select/examples/src/components/NumericSelect.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/NumericSelect'>;
-}
-declare module 'react-select/examples/src/components/States.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/States'>;
-}
-declare module 'react-select/examples/src/components/Virtualized.js' {
-  declare module.exports: $Exports<'react-select/examples/src/components/Virtualized'>;
-}
-declare module 'react-select/examples/src/data/cities.js' {
-  declare module.exports: $Exports<'react-select/examples/src/data/cities'>;
-}
-declare module 'react-select/examples/src/data/contributors.js' {
-  declare module.exports: $Exports<'react-select/examples/src/data/contributors'>;
-}
-declare module 'react-select/examples/src/data/states.js' {
-  declare module.exports: $Exports<'react-select/examples/src/data/states'>;
-}
-declare module 'react-select/examples/src/data/users.js' {
-  declare module.exports: $Exports<'react-select/examples/src/data/users'>;
-}
-declare module 'react-select/gulpfile.js' {
-  declare module.exports: $Exports<'react-select/gulpfile'>;
 }
 declare module 'react-select/lib/Async.js' {
   declare module.exports: $Exports<'react-select/lib/Async'>;
@@ -320,21 +188,6 @@ declare module 'react-select/src/utils/stripDiacritics.js' {
 }
 declare module 'react-select/src/Value.js' {
   declare module.exports: $Exports<'react-select/src/Value'>;
-}
-declare module 'react-select/test/Async-test.js' {
-  declare module.exports: $Exports<'react-select/test/Async-test'>;
-}
-declare module 'react-select/test/AsyncCreatable-test.js' {
-  declare module.exports: $Exports<'react-select/test/AsyncCreatable-test'>;
-}
-declare module 'react-select/test/Creatable-test.js' {
-  declare module.exports: $Exports<'react-select/test/Creatable-test'>;
-}
-declare module 'react-select/test/Select-test.js' {
-  declare module.exports: $Exports<'react-select/test/Select-test'>;
-}
-declare module 'react-select/test/Value-test.js' {
-  declare module.exports: $Exports<'react-select/test/Value-test'>;
 }
 declare module 'react-select/testHelpers/jsdomHelper.js' {
   declare module.exports: $Exports<'react-select/testHelpers/jsdomHelper'>;

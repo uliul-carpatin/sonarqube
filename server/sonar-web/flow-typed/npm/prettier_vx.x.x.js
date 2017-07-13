@@ -1,4 +1,4 @@
-// flow-typed signature: 48fec0bdc6ecc842dc92fb6c295eae83
+// flow-typed signature: 5f62e21a4a0e6f2e39bc7a2df8bf443e
 // flow-typed version: <<STUB>>/prettier_v1.2.2/flow_v0.47.0
 
 /**
@@ -23,14 +23,6 @@ declare module 'prettier' {
  * needed.
  */
 declare module 'prettier/bin/prettier' {
-  declare module.exports: any;
-}
-
-declare module 'prettier/docs/prettier.min' {
-  declare module.exports: any;
-}
-
-declare module 'prettier/docs/rollup.config' {
   declare module.exports: any;
 }
 
@@ -89,12 +81,6 @@ declare module 'prettier/test' {
 // Filename aliases
 declare module 'prettier/bin/prettier.js' {
   declare module.exports: $Exports<'prettier/bin/prettier'>;
-}
-declare module 'prettier/docs/prettier.min.js' {
-  declare module.exports: $Exports<'prettier/docs/prettier.min'>;
-}
-declare module 'prettier/docs/rollup.config.js' {
-  declare module.exports: $Exports<'prettier/docs/rollup.config'>;
 }
 declare module 'prettier/index' {
   declare module.exports: $Exports<'prettier'>;

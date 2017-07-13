@@ -1,4 +1,4 @@
-// flow-typed signature: b8c10316a595a7eeeb779076e3b4ae71
+// flow-typed signature: 7afc7363b372b66f1d2687f824e8631c
 // flow-typed version: <<STUB>>/keymaster_v1.6.2/flow_v0.47.0
 
 /**
@@ -26,14 +26,7 @@ declare module 'keymaster/keymaster' {
   declare module.exports: any;
 }
 
-declare module 'keymaster/test/evidence' {
-  declare module.exports: any;
-}
-
 // Filename aliases
 declare module 'keymaster/keymaster.js' {
   declare module.exports: $Exports<'keymaster/keymaster'>;
-}
-declare module 'keymaster/test/evidence.js' {
-  declare module.exports: $Exports<'keymaster/test/evidence'>;
 }

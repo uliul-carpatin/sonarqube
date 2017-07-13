@@ -1,4 +1,4 @@
-// flow-typed signature: 00de7208013c04231eb092c1e0c9fcd6
+// flow-typed signature: c9acc941612934e64ab4e44d26c1d78f
 // flow-typed version: <<STUB>>/blueimp-md5_v1.1.1/flow_v0.47.0
 
 /**
@@ -22,10 +22,6 @@ declare module 'blueimp-md5' {
  * require those files directly. Feel free to delete any files that aren't
  * needed.
  */
-declare module 'blueimp-md5/Gruntfile' {
-  declare module.exports: any;
-}
-
 declare module 'blueimp-md5/js/demo' {
   declare module.exports: any;
 }
@@ -38,14 +34,7 @@ declare module 'blueimp-md5/js/md5.min' {
   declare module.exports: any;
 }
 
-declare module 'blueimp-md5/test/test' {
-  declare module.exports: any;
-}
-
 // Filename aliases
-declare module 'blueimp-md5/Gruntfile.js' {
-  declare module.exports: $Exports<'blueimp-md5/Gruntfile'>;
-}
 declare module 'blueimp-md5/js/demo.js' {
   declare module.exports: $Exports<'blueimp-md5/js/demo'>;
 }
@@ -54,7 +43,4 @@ declare module 'blueimp-md5/js/md5.js' {
 }
 declare module 'blueimp-md5/js/md5.min.js' {
   declare module.exports: $Exports<'blueimp-md5/js/md5.min'>;
-}
-declare module 'blueimp-md5/test/test.js' {
-  declare module.exports: $Exports<'blueimp-md5/test/test'>;
 }

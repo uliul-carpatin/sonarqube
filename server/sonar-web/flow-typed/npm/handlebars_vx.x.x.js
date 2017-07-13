@@ -1,4 +1,4 @@
-// flow-typed signature: bf0740de511972a6016e5b0be717e577
+// flow-typed signature: 99374938df1acca00376ceae9f6db3a5
 // flow-typed version: <<STUB>>/handlebars_v2.0.0/flow_v0.47.0
 
 /**
@@ -22,10 +22,6 @@ declare module 'handlebars' {
  * require those files directly. Feel free to delete any files that aren't
  * needed.
  */
-declare module 'handlebars/coverage/lcov-report/prettify' {
-  declare module.exports: any;
-}
-
 declare module 'handlebars/dist/amd/handlebars' {
   declare module.exports: any;
 }
@@ -259,9 +255,6 @@ declare module 'handlebars/runtime' {
 }
 
 // Filename aliases
-declare module 'handlebars/coverage/lcov-report/prettify.js' {
-  declare module.exports: $Exports<'handlebars/coverage/lcov-report/prettify'>;
-}
 declare module 'handlebars/dist/amd/handlebars.js' {
   declare module.exports: $Exports<'handlebars/dist/amd/handlebars'>;
 }
