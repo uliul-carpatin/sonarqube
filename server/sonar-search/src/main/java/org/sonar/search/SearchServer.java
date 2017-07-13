@@ -56,7 +56,7 @@ public class SearchServer implements Monitored {
   @Override
   public void start() {
     List<String> command = new ArrayList<>();
-    command.add("/Users/danielschwarz/SonarSource/batches/elasticsearch/elasticsearch-5.0.0/bin/elasticsearch");
+    command.add("/home/sebastienl/tmp/elasticsearch-5.0.2/bin/elasticsearch");
     Map<String, String> settingsMap = settings.build();
     settingsMap.entrySet().stream()
       .filter(entry -> !"path.home".equals(entry.getKey()))
@@ -64,7 +64,7 @@ public class SearchServer implements Monitored {
     url = "http://"+settingsMap.get("http.host") + ":" + settingsMap.get("http.port");
     System.out.println(command.stream().collect(Collectors.joining(" ")));
     ProcessBuilder builder = new ProcessBuilder(command)
-      .directory(new File("/Users/danielschwarz/SonarSource/batches/elasticsearch/elasticsearch-5.0.0/bin/"));
+      .directory(new File("/home/sebastienl/tmp/elasticsearch-5.0.2/bin/"));
     builder.redirectOutput(ProcessBuilder.Redirect.PIPE);
     builder.redirectErrorStream(true);
     try {
