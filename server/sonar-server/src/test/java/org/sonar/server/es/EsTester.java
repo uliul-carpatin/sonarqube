@@ -19,6 +19,7 @@
  */
 package org.sonar.server.es;
 
+import com.carrotsearch.randomizedtesting.RandomizedContext;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
@@ -27,7 +28,13 @@ import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.lang.reflect.ConstructorUtils;
@@ -36,38 +43,135 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.cluster.ClusterState;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
+import org.elasticsearch.common.network.NetworkModule;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.discovery.DiscoveryModule;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
+import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.test.NodeConfigurationSource;
+import org.elasticsearch.test.transport.AssertingLocalTransport;
+import org.elasticsearch.transport.MockTcpTransportPlugin;
 import org.junit.rules.ExternalResource;
 import org.sonar.api.config.internal.MapSettings;
 import org.sonar.core.config.ConfigurationProvider;
 import org.sonar.core.platform.ComponentContainer;
+import org.sonar.elasticsearch.test.EsTestCluster;
 import org.sonar.server.es.metadata.MetadataIndex;
 import org.sonar.server.es.metadata.MetadataIndexDefinition;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
+import static org.elasticsearch.test.XContentTestUtils.convertToMap;
+import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertNoTimeout;
 import static org.sonar.server.es.DefaultIndexSettings.REFRESH_IMMEDIATE;
 
 public class EsTester extends ExternalResource {
 
   private final List<IndexDefinition> indexDefinitions;
-  private final EsClient client = new EsClient(NodeHolder.INSTANCE.node.client());
+  private final EsTestCluster cluster;
+  private final EsClient client;
+
   private ComponentContainer container;
 
   public EsTester(IndexDefinition... defs) {
     this.indexDefinitions = asList(defs);
+
+    Path tempDirectory;
+    try {
+      tempDirectory = Files.createTempDirectory("es-unit-test");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    try {
+      cluster = RandomizedContext.current().runWithPrivateRandomness(new com.carrotsearch.randomizedtesting.Randomness(0L), new Callable<EsTestCluster>() {
+        @Override
+        public EsTestCluster call() throws Exception {
+          return new EsTestCluster(0L, tempDirectory, false, 1, 1, "test cluster",
+            getNodeConfigSource(), 0, false, "node-prefix", asList(            AssertingLocalTransport.TestPlugin.class
+  //      ,
+  //      MockTcpTransportPlugin.class
+          ), i -> i);
+        }
+      });
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    try {
+      cluster.beforeTest(new Random(), 1L);
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+
+    client = new EsClient(cluster.masterClient());
+  }
+
+  public void afterTest() throws IOException {
+    cluster.afterTest();
+  }
+
+  protected NodeConfigurationSource getNodeConfigSource() {
+    Settings.Builder networkSettings = Settings.builder();
+    final boolean isNetwork = false;
+
+      if (isNetwork) {//FIXME
+        networkSettings.put(NetworkModule.TRANSPORT_TYPE_KEY, AssertingLocalTransport.ASSERTING_TRANSPORT_NAME);
+      } else {
+        networkSettings.put(NetworkModule.TRANSPORT_TYPE_KEY, "local");
+      }
+
+    NodeConfigurationSource nodeConfigurationSource = new NodeConfigurationSource() {
+      @Override
+      public Settings nodeSettings(int nodeOrdinal) {
+        return Settings.builder()
+          .put(NetworkModule.HTTP_ENABLED.getKey(), false)
+          .put(DiscoveryModule.DISCOVERY_TYPE_SETTING.getKey(),
+            isNetwork ? DiscoveryModule.DISCOVERY_TYPE_SETTING.getDefault(Settings.EMPTY) : "local")
+          .put(networkSettings.build())
+          .build();
+      }
+
+      @Override
+      public Collection<Class<? extends Plugin>> nodePlugins() {
+        return Collections.emptyList();
+      }
+
+      @Override
+      public Settings transportClientSettings() {
+        return Settings.builder().put(networkSettings.build()).build();
+      }
+
+      @Override
+      public Collection<Class<? extends Plugin>> transportClientPlugins() {
+        Collection<Class<? extends Plugin>> plugins = Collections.emptyList();
+        if (isNetwork && plugins.contains(MockTcpTransportPlugin.class) == false) {
+          plugins = new ArrayList<>(plugins);
+          plugins.add(MockTcpTransportPlugin.class);
+        } else if (isNetwork == false && plugins.contains(AssertingLocalTransport.class) == false) {
+          plugins = new ArrayList<>(plugins);
+          plugins.add(AssertingLocalTransport.TestPlugin.class);
+        }
+        return Collections.unmodifiableCollection(plugins);
+      }
+    };
+    return nodeConfigurationSource;
+  }
+
+  public void name() {
   }
 
   @Override
-  protected void before() throws Throwable {
-    deleteIndices();
+  public void before() throws Throwable {
+    cluster.beforeTest(new Random(), 1L);
 
     if (!indexDefinitions.isEmpty()) {
       container = new ComponentContainer();
@@ -84,14 +188,122 @@ public class EsTester extends ExternalResource {
   }
 
   @Override
-  protected void after() {
+  public void after() {
     if (container != null) {
       container.stopComponents();
     }
     if (client != null) {
       client.close();
     }
+    if (cluster != null) {
+      try {
+        afterInternal(true);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      cluster.close();
+    }
   }
+
+  protected final void afterInternal(boolean afterClass) throws Exception {
+    boolean success = false;
+    try {
+      try {
+        if (cluster != null) {
+//          if (currentClusterScope != ESIntegTestCase.Scope.TEST) {
+//            MetaData metaData = client().admin().cluster().prepareState().execute().actionGet().getState().getMetaData();
+//            assertThat("test leaves persistent cluster metadata behind: " + metaData.persistentSettings().getAsMap(), metaData
+//              .persistentSettings().getAsMap().size(), equalTo(0));
+//            assertThat("test leaves transient cluster metadata behind: " + metaData.transientSettings().getAsMap(), metaData
+//              .transientSettings().getAsMap().size(), equalTo(0));
+//          }
+          ensureClusterSizeConsistency();
+          ensureClusterStateConsistency();
+//          if (isInternalCluster()) {
+//            // check no pending cluster states are leaked
+//            for (Discovery discovery : internalCluster().getInstances(Discovery.class)) {
+//              if (discovery instanceof ZenDiscovery) {
+//                final ZenDiscovery zenDiscovery = (ZenDiscovery) discovery;
+//                assertBusy(new Runnable() {
+//                  @Override
+//                  public void run() {
+//                    assertThat("still having pending states: " + Strings.arrayToDelimitedString(zenDiscovery.pendingClusterStates(), "\n"),
+//                      zenDiscovery.pendingClusterStates(), emptyArray());
+//                  }
+//                });
+//              }
+//            }
+//          }
+          cluster.beforeIndexDeletion();
+          cluster.wipe(Collections.emptySet()); // wipe after to make sure we fail in the test that didn't ack the delete
+          if (afterClass) {// || currentClusterScope == ESIntegTestCase.Scope.TEST) {
+            cluster.close();
+          }
+          cluster.assertAfterTest();
+        }
+      } finally {
+//        if (currentClusterScope == ESIntegTestCase.Scope.TEST) {
+//          clearClusters(); // it is ok to leave persistent / transient cluster state behind if scope is TEST
+//        }
+      }
+      success = true;
+    } finally {
+      if (!success) {
+        // if we failed here that means that something broke horribly so we should clear all clusters
+        // TODO: just let the exception happen, WTF is all this horseshit
+        // afterTestRule.forceFailure();
+      }
+    }
+  }
+
+  protected void ensureClusterSizeConsistency() {
+    if (cluster != null) { // if static init fails the cluster can be null
+//      logger.trace("Check consistency for [{}] nodes", cluster().size());
+      assertNoTimeout(cluster.client().admin().cluster().prepareHealth().setWaitForNodes(Integer.toString(cluster.size())).get());
+    }
+  }
+
+  /**
+   * Verifies that all nodes that have the same version of the cluster state as master have same cluster state
+   */
+  protected void ensureClusterStateConsistency() throws IOException {
+    if (cluster != null) {
+      ClusterState masterClusterState = cluster.client().admin().cluster().prepareState().all().get().getState();
+      byte[] masterClusterStateBytes = ClusterState.Builder.toBytes(masterClusterState);
+      // remove local node reference
+      masterClusterState = ClusterState.Builder.fromBytes(masterClusterStateBytes, null);
+      Map<String, Object> masterStateMap = convertToMap(masterClusterState);
+      int masterClusterStateSize = ClusterState.Builder.toBytes(masterClusterState).length;
+      String masterId = masterClusterState.nodes().getMasterNodeId();
+      for (Client client : cluster.getClients()) {
+        ClusterState localClusterState = client.admin().cluster().prepareState().all().setLocal(true).get().getState();
+        byte[] localClusterStateBytes = ClusterState.Builder.toBytes(localClusterState);
+        // remove local node reference
+        localClusterState = ClusterState.Builder.fromBytes(localClusterStateBytes, null);
+        final Map<String, Object> localStateMap = convertToMap(localClusterState);
+        final int localClusterStateSize = ClusterState.Builder.toBytes(localClusterState).length;
+        // Check that the non-master node has the same version of the cluster state as the master and
+        // that the master node matches the master (otherwise there is no requirement for the cluster state to match)
+        if (masterClusterState.version() == localClusterState.version() && masterId.equals(localClusterState.nodes().getMasterNodeId())) {
+//          try {
+//            assertEquals("clusterstate UUID does not match", masterClusterState.stateUUID(), localClusterState.stateUUID());
+//            // We cannot compare serialization bytes since serialization order of maps is not guaranteed
+//            // but we can compare serialization sizes - they should be the same
+//            assertEquals("clusterstate size does not match", masterClusterStateSize, localClusterStateSize);
+//            // Compare JSON serialization
+//            assertNull("clusterstate JSON serialization does not match", differenceBetweenMapsIgnoringArrayOrder(masterStateMap, localStateMap));
+//          } catch (AssertionError error) {
+//            logger.error("Cluster state from master:\n{}\nLocal cluster state:\n{}", masterClusterState.toString(), localClusterState.toString());
+//            throw error;
+//          }
+        }
+      }
+    }
+
+  }
+
+
+
 
   private void deleteIndices() {
     client.nativeClient().admin().indices().prepareDelete("_all").get();
