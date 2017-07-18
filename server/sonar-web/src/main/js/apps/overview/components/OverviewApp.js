@@ -22,6 +22,7 @@ import React from 'react';
 import { uniq } from 'lodash';
 import moment from 'moment';
 import QualityGate from '../qualityGate/QualityGate';
+import ApplicationQualityGate from '../qualityGate/ApplicationQualityGate';
 import BugsAndVulnerabilities from '../main/BugsAndVulnerabilities';
 import CodeSmells from '../main/CodeSmells';
 import Coverage from '../main/Coverage';
@@ -146,7 +147,9 @@ export default class OverviewApp extends React.PureComponent {
       <div className="page page-limited">
         <div className="overview page-with-sidebar">
           <div className="overview-main page-main">
-            <QualityGate component={component} measures={measures} />
+            {component.qualifier === 'APP'
+              ? <ApplicationQualityGate component={component} />
+              : <QualityGate component={component} measures={measures} />}
 
             <TooltipsContainer>
               <div className="overview-domains-list">

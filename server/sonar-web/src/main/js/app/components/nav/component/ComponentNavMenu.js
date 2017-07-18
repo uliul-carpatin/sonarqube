@@ -54,6 +54,10 @@ export default class ComponentNavMenu extends React.PureComponent {
     return qualifier === 'VW' || qualifier === 'SVW';
   }
 
+  isApplication() {
+    return this.props.component.qualifier === 'APP';
+  }
+
   renderDashboardLink() {
     const pathname = this.isView() ? '/portfolio' : '/dashboard';
     return (
@@ -75,14 +79,16 @@ export default class ComponentNavMenu extends React.PureComponent {
         <Link
           to={{ pathname: '/code', query: { id: this.props.component.key } }}
           activeClassName="active">
-          {this.isView() ? translate('view_projects.page') : translate('code.page')}
+          {this.isView() || this.isApplication()
+            ? translate('view_projects.page')
+            : translate('code.page')}
         </Link>
       </li>
     );
   }
 
   renderActivityLink() {
-    if (!this.isProject()) {
+    if (!this.isProject() && !this.isApplication()) {
       return null;
     }
 
