@@ -63,14 +63,15 @@ public class PermissionTemplateTest {
   public void apply_permission_template_on_project() {
     Organization organization = tester.organizations().generate();
     Project project = tester.projects().generate(organization, p -> p.setVisibility("private"));
-    WsUsers.CreateWsResponse.User user = createMemberOf(organization);
-    WsUsers.CreateWsResponse.User anotherUser = createMemberOf(organization);
+    WsUsers.CreateWsResponse.User user = tester.users().generateMember(organization);
+    WsUsers.CreateWsResponse.User anotherUser = tester.users().generateMember(organization);
 
     assertThatUserDoesNotHavePermission(user, organization, project);
     assertThatUserDoesNotHavePermission(anotherUser, organization, project);
-    assertThat(userHasAccessToIndexedProject(user, organization, project)).isFalse();
+    assertThat(userHasAccessToIndexedProject(user, organization, project)).isTrue();
+    assertThat(userHasAccessToIndexedProject(anotherUser, organization, project)).isTrue();
 
-    // create permission template that gives administration permission to "user"
+    // create permission template that gives read permission to "user"
     createAndApplyTemplate(organization, project, user);
 
     assertThatUserHasPermission(user, organization, project);
@@ -83,8 +84,8 @@ public class PermissionTemplateTest {
   public void indexing_errors_are_recovered_when_applying_permission_template_on_project() throws Exception {
     Organization organization = tester.organizations().generate();
     Project project = tester.projects().generate(organization, p -> p.setVisibility("private"));
-    WsUsers.CreateWsResponse.User user = createMemberOf(organization);
-    WsUsers.CreateWsResponse.User anotherUser = createMemberOf(organization);
+    WsUsers.CreateWsResponse.User user = tester.users().generateMember(organization);
+    WsUsers.CreateWsResponse.User anotherUser = tester.users().generateMember(organization);
 
     lockWritesOnProjectIndices();
 
@@ -93,7 +94,7 @@ public class PermissionTemplateTest {
     assertThatUserHasPermission(user, organization, project);
     assertThatUserDoesNotHavePermission(anotherUser, organization, project);
     assertThat(userHasAccessToIndexedProject(user, organization, project)).isTrue();
-    // inconsistent
+    // inconsistent, should be false. Waiting for ES to be updated.
     assertThat(userHasAccessToIndexedProject(user, organization, project)).isTrue();
 
     unlockWritesOnProjectIndices();
@@ -115,12 +116,6 @@ public class PermissionTemplateTest {
     tester.elasticsearch().unlockWrites("issues");
     tester.elasticsearch().unlockWrites("projectmeasures");
     tester.elasticsearch().unlockWrites("components");
-  }
-
-  private WsUsers.CreateWsResponse.User createMemberOf(Organization organization) {
-    WsUsers.CreateWsResponse.User user = tester.users().generate();
-    tester.organizations().service().addMember(organization.getKey(), user.getLogin());
-    return user;
   }
 
   /**
