@@ -27,7 +27,7 @@ import org.sonar.core.util.stream.MoreCollectors;
 
 import static java.util.Objects.requireNonNull;
 
-public class IndexType {
+public class IndexType implements Comparable<IndexType> {
 
   private static final String SEPARATOR = "/";
   private static final Splitter SEPARATOR_SPLITTER = Splitter.on(SEPARATOR);
@@ -95,8 +95,14 @@ public class IndexType {
     return key.hashCode();
   }
 
+
   @Override
   public String toString() {
     return "[" + index + "/" + type + "]";
+  }
+
+  @Override
+  public int compareTo(IndexType o) {
+    return key.compareTo(o.key);
   }
 }
