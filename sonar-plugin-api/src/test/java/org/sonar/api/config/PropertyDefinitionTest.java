@@ -414,7 +414,7 @@ public class PropertyDefinitionTest {
         biConsumer.accept(builder, qualifier);
         fail("A IllegalArgumentException should have been thrown for qualifier " + qualifier);
       } catch (IllegalArgumentException e) {
-        assertThat(e).hasMessage("Qualifier must be one of [TRK, VW, BRC, SVW]");
+        assertThat(e).hasMessage("Qualifier must be one of [TRK, VW, BRC, SVW, APP]");
       }
     });
   }

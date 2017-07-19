@@ -33,6 +33,17 @@ public class QualifiersTest {
     assertThat(Qualifiers.isView(root, false)).isTrue();
     assertThat(Qualifiers.isProject(root, true)).isFalse();
     assertThat(Qualifiers.isProject(root, false)).isFalse();
+    assertThat(Qualifiers.isApplication(root)).isFalse();
+  }
+
+  @Test
+  public void application() {
+    View root = View.createRootApp();
+    assertThat(Qualifiers.isView(root, true)).isFalse();
+    assertThat(Qualifiers.isView(root, false)).isFalse();
+    assertThat(Qualifiers.isProject(root, true)).isFalse();
+    assertThat(Qualifiers.isProject(root, false)).isFalse();
+    assertThat(Qualifiers.isApplication(root)).isTrue();
   }
 
   @Test
@@ -42,6 +53,7 @@ public class QualifiersTest {
     assertThat(Qualifiers.isView(subview, false)).isFalse();
     assertThat(Qualifiers.isProject(subview, true)).isFalse();
     assertThat(Qualifiers.isProject(subview, false)).isFalse();
+    assertThat(Qualifiers.isApplication(subview)).isFalse();
   }
 
   @Test
@@ -54,6 +66,7 @@ public class QualifiersTest {
     assertThat(Qualifiers.isView(root, false)).isFalse();
     assertThat(Qualifiers.isProject(root, true)).isTrue();
     assertThat(Qualifiers.isProject(root, false)).isTrue();
+    assertThat(Qualifiers.isApplication(root)).isFalse();
   }
 
   @Test
@@ -66,6 +79,7 @@ public class QualifiersTest {
     assertThat(Qualifiers.isView(sub, false)).isFalse();
     assertThat(Qualifiers.isProject(sub, true)).isTrue();
     assertThat(Qualifiers.isProject(sub, false)).isFalse();
+    assertThat(Qualifiers.isApplication(sub)).isFalse();
   }
 
   private static class View extends Resource {
@@ -78,6 +92,10 @@ public class QualifiersTest {
 
     static View createRootView() {
       return new View(Qualifiers.VIEW);
+    }
+
+    static View createRootApp() {
+      return new View(Qualifiers.APP);
     }
 
     static View createSubView() {
