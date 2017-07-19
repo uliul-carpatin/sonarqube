@@ -137,11 +137,18 @@ public class SearchServer implements Monitored {
       return buildServerPath.toAbsolutePath();
     }
 
-    throw new IllegalStateException(String.format("Cannot find elasticsearch binary %s in either %s or %s or %s",
+    String grandParentAssembly = "../" + assembly;
+    Path buildServerPath2 = Paths.get(grandParentAssembly + executable);
+    if (buildServerPath2.toFile().exists()) {
+      return buildServerPath2.toAbsolutePath();
+    }
+
+    throw new IllegalStateException(String.format("Cannot find elasticsearch binary %s in either %s or %s or %s or %s",
             executable,
             Paths.get(".").toAbsolutePath().getParent(),
             Paths.get(assembly).toAbsolutePath(),
-            Paths.get(parentAssembly).toAbsolutePath()
+            Paths.get(parentAssembly).toAbsolutePath(),
+            Paths.get(grandParentAssembly).toAbsolutePath()
     ));
   }
 
