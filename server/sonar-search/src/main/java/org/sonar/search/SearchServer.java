@@ -137,7 +137,7 @@ public class SearchServer implements Monitored {
       return buildServerPath.toAbsolutePath();
     }
 
-    String grandParentAssembly = "../" + assembly;
+    String grandParentAssembly = "../" + parentAssembly;
     Path buildServerPath2 = Paths.get(grandParentAssembly + executable);
     if (buildServerPath2.toFile().exists()) {
       return buildServerPath2.toAbsolutePath();
