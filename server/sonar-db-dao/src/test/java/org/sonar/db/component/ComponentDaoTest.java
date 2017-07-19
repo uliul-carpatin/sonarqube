@@ -511,11 +511,16 @@ public class ComponentDaoTest {
   }
 
   @Test
-  public void select_views_and_sub_views() {
-    db.prepareDbUnit(getClass(), "shared_views.xml");
+  public void select_views_and_sub_views_and_applications() {
+    OrganizationDto organization = db.organizations().insert();
+    db.components().insertView(organization, "ABCD");
+    db.components().insertView(organization, "IJKL");
+    ComponentDto view = db.components().insertView(organization, "EFGH");
+    db.components().insertSubView(view, dto -> dto.setUuid("FGHI"));
+    db.components().insertApplication(organization, "APP_1");
 
-    assertThat(underTest.selectAllViewsAndSubViews(dbSession)).extracting("uuid").containsOnly("ABCD", "EFGH", "FGHI", "IJKL");
-    assertThat(underTest.selectAllViewsAndSubViews(dbSession)).extracting("projectUuid").containsOnly("ABCD", "EFGH", "IJKL");
+    assertThat(underTest.selectAllViewsAndSubViews(dbSession)).extracting("uuid").containsExactlyInAnyOrder("ABCD", "EFGH", "FGHI", "IJKL", "APP_1");
+    assertThat(underTest.selectAllViewsAndSubViews(dbSession)).extracting("projectUuid").containsOnly("ABCD", "EFGH", "IJKL", "APP_1");
   }
 
   @Test
