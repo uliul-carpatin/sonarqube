@@ -349,7 +349,7 @@ public class SuggestionsActionTest {
 
     assertThat(response.getResultsList())
       .extracting(Category::getQ, Category::getItemsCount)
-      .containsExactlyInAnyOrder(tuple("VW", 0), tuple("SVW", 0), tuple("TRK", 1), tuple("BRC", 0), tuple("FIL", 0), tuple("UTS", 0));
+      .containsExactlyInAnyOrder(tuple("VW", 0), tuple("APP", 0), tuple("SVW", 0), tuple("TRK", 1), tuple("BRC", 0), tuple("FIL", 0), tuple("UTS", 0));
   }
 
   @Test
@@ -565,13 +565,14 @@ public class SuggestionsActionTest {
 
     assertThat(response.getResultsList())
       .extracting(Category::getQ, Category::getItemsCount)
-      .containsExactlyInAnyOrder(tuple("VW", 0), tuple("SVW", 0), tuple("TRK", 1), tuple("BRC", 0), tuple("FIL", 0), tuple("UTS", 0));
+      .containsExactlyInAnyOrder(tuple("VW", 0), tuple("SVW", 0), tuple("APP", 0), tuple("TRK", 1), tuple("BRC", 0), tuple("FIL", 0), tuple("UTS", 0));
   }
 
   @Test
   public void should_only_provide_project_for_certain_qualifiers() throws Exception {
     String query = randomAlphabetic(10);
 
+    ComponentDto app = db.components().insertApplication(organization, v -> v.setName(query));
     ComponentDto view = db.components().insertView(organization, v -> v.setName(query));
     ComponentDto subView = db.components().insertComponent(ComponentTesting.newSubView(view).setName(query));
     ComponentDto project = db.components().insertPrivateProject(organization, p -> p.setName(query));
@@ -590,6 +591,8 @@ public class SuggestionsActionTest {
     assertThat(response.getResultsList())
       .extracting(Category::getQ, c -> c.getItemsList().stream().map(Suggestion::hasProject).findFirst().orElse(null))
       .containsExactlyInAnyOrder(
+        //FIXME APP qualifier must be handled by the global search
+        tuple(SuggestionCategory.APP.getName(), null),
         tuple(SuggestionCategory.VIEW.getName(), false),
         tuple(SuggestionCategory.SUBVIEW.getName(), false),
         tuple(SuggestionCategory.PROJECT.getName(), false),

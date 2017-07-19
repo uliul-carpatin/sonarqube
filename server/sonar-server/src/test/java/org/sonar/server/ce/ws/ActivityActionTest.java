@@ -53,6 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.sonar.api.utils.DateUtils.formatDate;
 import static org.sonar.api.utils.DateUtils.formatDateTime;
+import static org.sonar.db.component.ComponentTesting.newApplication;
 import static org.sonar.db.component.ComponentTesting.newView;
 import static org.sonarqube.ws.client.ce.CeWsParameters.PARAM_COMPONENT_ID;
 import static org.sonarqube.ws.client.ce.CeWsParameters.PARAM_COMPONENT_QUERY;
@@ -261,6 +262,19 @@ public class ActivityActionTest {
     dbTester.components().insertViewAndSnapshot(apacheView);
     logInAsSystemAdministrator();
     insertActivity("T2", "V1", CeActivityDto.Status.SUCCESS);
+
+    ActivityResponse activityResponse = call(ws.newRequest().setParam(PARAM_COMPONENT_QUERY, "apac"));
+
+    assertThat(activityResponse.getTasksList()).extracting("id").containsOnly("T2");
+  }
+
+  @Test
+  public void search_activity_returns_application() {
+    OrganizationDto organizationDto = dbTester.organizations().insert();
+    ComponentDto apacheApp = newApplication(organizationDto).setName("Apache App").setUuid("A1").setProjectUuid("A1");
+    dbTester.components().insertViewAndSnapshot(apacheApp);
+    logInAsSystemAdministrator();
+    insertActivity("T2", "A1", CeActivityDto.Status.SUCCESS);
 
     ActivityResponse activityResponse = call(ws.newRequest().setParam(PARAM_COMPONENT_QUERY, "apac"));
 
