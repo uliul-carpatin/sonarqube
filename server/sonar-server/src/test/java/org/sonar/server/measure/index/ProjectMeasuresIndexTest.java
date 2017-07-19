@@ -1183,6 +1183,7 @@ public class ProjectMeasuresIndexTest {
       entry("500000.0-*", 0L));
   }
 
+  @Ignore
   @Test
   public void facet_languages_returns_more_than_10_languages_when_languages_filter_contains_value_not_in_top_10() {
     index(
